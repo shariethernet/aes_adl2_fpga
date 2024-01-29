@@ -43,9 +43,9 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project -f harness_axi_proj harness_axi_proj -part xc7z020clg400-1
+   create_project project_1 myproj -part xc7z020clg400-1
 }
-exec cp -r ./cached_results/harness_axi_proj.cache ./harness_axi_proj/
+
 
 # CHANGE DESIGN NAME HERE
 variable design_name
@@ -114,42 +114,6 @@ common::send_gid_msg -ssname BD::TCL -id 2005 -severity "INFO" "Currently the va
 if { $nRet != 0 } {
    catch {common::send_gid_msg -ssname BD::TCL -id 2006 -severity "ERROR" $errMsg}
    return $nRet
-}
-
-set_property  ip_repo_paths  {./harness_axi_ip} [current_project]
-update_ip_catalog
-set bCheckIPsPassed 1
-##################################################################
-# CHECK IPs
-##################################################################
-set bCheckIPs 1
-if { $bCheckIPs == 1 } {
-   set list_check_ips "\ 
-user.org:user:harness_axi_ip_v1_0:1.0\
-xilinx.com:ip:processing_system7:5.5\
-xilinx.com:ip:proc_sys_reset:5.0\
-"
-
-   set list_ips_missing ""
-   common::send_gid_msg -ssname BD::TCL -id 2011 -severity "INFO" "Checking if the following IPs exist in the project's IP catalog: $list_check_ips ."
-
-   foreach ip_vlnv $list_check_ips {
-      set ip_obj [get_ipdefs -all $ip_vlnv]
-      if { $ip_obj eq "" } {
-         lappend list_ips_missing $ip_vlnv
-      }
-   }
-
-   if { $list_ips_missing ne "" } {
-      catch {common::send_gid_msg -ssname BD::TCL -id 2012 -severity "ERROR" "The following IPs are not found in the IP Catalog:\n  $list_ips_missing\n\nResolution: Please add the repository containing the IP(s) to the project." }
-      set bCheckIPsPassed 0
-   }
-
-}
-
-if { $bCheckIPsPassed != 1 } {
-  common::send_gid_msg -ssname BD::TCL -id 2023 -severity "WARNING" "Will not continue with creation of design due to the error(s) above."
-  return 3
 }
 
 ##################################################################
@@ -1026,16 +990,11 @@ proc create_root_design { parentCell } {
   # Create address segments
   assign_bd_address -offset 0x43C00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs harness_axi_ip_v1_0_0/s00_axi/reg0] -force
 
-  assign_bd_address -offset 0x43C00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs harness_axi_ip_v1_0_0/s00_axi/reg0] -force
-
-  # Change clock frequency to 25MHz, uncomment below three if you design has timing violations
-  # startgroup
-  # set_property -dict [list CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {25}] [get_bd_cells processing_system7_0]
-  # endgroup
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
+  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
@@ -1047,20 +1006,4 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
-########### Upgrade IP
-export_ip_user_files -of_objects [get_ips design_1_harness_axi_ip_v1_0_0_0] -no_script -sync -force -quiet
-
-##### GenerateTop Level Wrapper
-
-make_wrapper -files [get_files ./harness_axi_proj/harness_axi_proj.srcs/sources_1/bd/design_1/design_1.bd] -top
-
-add_files -norecurse ./harness_axi_proj/harness_axi_proj.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v
-
-launch_runs impl_1 -to_step write_bitstream -jobs 16
-
-puts "Generating bitstream. It will take some time!"
-
-wait_on_run impl_1
-
-puts "Implementation done!"
 

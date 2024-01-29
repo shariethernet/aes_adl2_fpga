@@ -1,2 +1,1 @@
-cpu.v
-dmem.v
+AES_Comp.v
