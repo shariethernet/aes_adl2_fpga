@@ -985,7 +985,7 @@
 	// Implement memory mapped register select and read logic generation
 	// Slave register read enable is asserted when valid address is available
 	// and the slave is ready to accept the read address.
-	wire [C_S_AXI_DATA_WIDTH-1:0] cipher_text_0, cipher_text_1, cipher_text_2, cipher_text_3, busy;
+	wire [C_S_AXI_DATA_WIDTH-1:0] cipher_text_0, cipher_text_1, cipher_text_2, cipher_text_3, busy, sum;
 	
 	assign slv_reg_rden = axi_arready & S_AXI_ARVALID & ~axi_rvalid;
 //	wire [C_S_AXI_DATA_WIDTH-1:0] reg31, reg30, reg29, reg28, reg27, reg26, reg2, reg24, reg23, reg22, reg21, reg20, reg19, reg18, reg17, reg16, reg15, reg14, reg13, reg12, reg11, reg10, reg9, reg8, reg7, reg6, reg5, reg4, reg3, reg2, reg1, reg0;
@@ -1003,7 +1003,7 @@
 	        7'h07   : reg_data_out <= slv_reg7;
 	        7'h08   : reg_data_out <= slv_reg8;
 	        7'h09   : reg_data_out <= slv_reg9;
-	        7'h0A   : reg_data_out <= slv_reg10;
+	        7'h0A   : reg_data_out <= slv_reg10; 
 	        7'h0B   : reg_data_out <= slv_reg11;
 	        7'h0C   : reg_data_out <= slv_reg12;
 	        7'h0D   : reg_data_out <= slv_reg13;
@@ -1025,14 +1025,15 @@
 	        7'h1D   : reg_data_out <= slv_reg29;
 	        7'h1E   : reg_data_out <= slv_reg30;
 	        7'h1F   : reg_data_out <= slv_reg31;
-	        7'h20   : reg_data_out <= cipher_text_0;
-	        7'h21   : reg_data_out <= cipher_text_1;
-	        7'h22   : reg_data_out <= cipher_text_2;
-	        7'h23   : reg_data_out <= cipher_text_3;
-	        7'h24   : reg_data_out <= busy;
-			7'h40   : reg_data_out <= slv_reg64;
-	        7'h41   : reg_data_out <= 0;
-	        default : reg_data_out <= 0;
+	        7'h20   : reg_data_out <= cipher_text_0; //slv_reg32;
+	        7'h21   : reg_data_out <= cipher_text_1; //slv_reg33;
+	        7'h22   : reg_data_out <= cipher_text_2; //slv_reg34;
+	        7'h23   : reg_data_out <= cipher_text_3; //slv_reg35;
+	        7'h24   : reg_data_out <= busy; //slv_reg36;
+			7'h25   : reg_data_out <= sum; //slv_reg37
+			7'h40   : reg_data_out <= slv_reg64; //slv_reg36;
+	        7'h41   : reg_data_out <= 0; //slv_reg36;
+	        default : reg_data_out <= 0; //slv_reg0;
 	      endcase
 	end
 
@@ -1096,12 +1097,16 @@ module harness_axi(
 		.Krdy(slv_reg8),
 		.Drdy(slv_reg9),
 		.EN(slv_reg10),
+		.add1(slv_reg11),
+		.add2(slv_reg12),
 //Outputs
 		.OUT_DATA0(cipher_text_0),
 		.OUT_DATA1(cipher_text_1),
 		.OUT_DATA2(cipher_text_2),
 		.OUT_DATA3(cipher_text_3),
+		.sum(sum),
 		.BSY(busy)
+
 	);
 
 	// User logic ends

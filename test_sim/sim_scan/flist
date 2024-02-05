@@ -1,0 +1,7 @@
+#+incdir+../rtl/
+#../rtl/AES_Comp.v
+./timescale.v
+#../synth/RESULTS/AES_Comp.v
+#tb_aes_base.v
+tb_scan.v
+#-v /usr/local/packages/tsmc_65gp/digital/Front_End/verilog/tcbn65gplus_200a/tcbn65gplus.v

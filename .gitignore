@@ -13,4 +13,4 @@ harness_axi_proj/
 *.str
 a.out
 cached_results/
-
+harness_axi_proj_with debug

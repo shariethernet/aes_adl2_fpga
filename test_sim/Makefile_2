@@ -1,0 +1,23 @@
+mykey = 000102030405060708090a0b0c0d0e0f
+myin = B9D1C48E348FE771FA464A77A178FB07
+myout = 95F8847369A8573D76AF987AB30A5DE2
+
+clean: 
+	rm -r csrc
+	rm -r simv.daidir
+	rm simv
+comp:
+	#vcs -debug_all -f flist +define+MYKEY="128'h$(mykey)" +define+MYIN="128'h$(myin)" +define+MYOUT="128'h$(myout)" 
+	# vcs -full64 -debug_all -f flist +v2k
+	vcs -full64 -debug_acc+all+dmptf -debug_region+cell+encrypt -f flist +v2k
+run:
+#	./simv -gui
+	./simv +vpdnocompress+loopreport
+wf:
+	dve -vpd AES_Comp_ENC.vcd &
+#	dve -vpd example1_scan_ctrlogic.vpd &
+	#dve -vpd netlist.vpd &
+all:
+	make comp
+	make run
+	make wf
